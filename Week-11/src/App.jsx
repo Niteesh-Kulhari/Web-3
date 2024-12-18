@@ -1,31 +1,54 @@
-import { useEffect, useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import axios from "axios"
+import { useEffect, useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "/vite.svg";
+import "./App.css";
+import axios from "axios";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+const queryClient = new QueryClient();
 
 async function getter() {
-  const res = await axios.get("https://jsonplaceholder.typicode.com/posts")
-  const response = await res.json();
-  return response;
+  const res = await axios.get("https://jsonplaceholder.typicode.com/posts");
+  return res.data;
 }
 
 function App() {
-  const [todos, setTodos] = useState([]);
-
-  
-
-  // useEffect( () => {
-  //   fetchData();
-  // },[])
+ 
 
   return (
-    <>
-     {todos.map((todo) => (
-      <li key={todo.id}>{todo.title}</li>
-     ))}
-    </>
-  )
+    <QueryClientProvider client={queryClient}>
+      <Posts />
+    </QueryClientProvider>
+  );
 }
 
-export default App
+function Posts() {
+  const {data, isLoading, isError} = useQuery({queryKey: ['todos'], queryFn: getter});
+
+  if(isError){
+    return(
+      <div>Error loading the data</div>
+    )
+  }
+
+  if(isLoading){
+    return(
+      <div>Loading...</div>
+    )
+  }
+
+  return(
+    <div>
+      {data.map((todo) => (
+        <li key={todo.id}>{todo.title}</li>
+      ))}
+    </div>
+  )
+
+}
+
+export default App;
